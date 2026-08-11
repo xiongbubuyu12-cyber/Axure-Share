@@ -1,0 +1,1644 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-PIM | 灵感任务池</title>
+  <style>
+    :root {
+      --color-primary: #bb0f2c;
+      --color-primary-hover: #97071f;
+      --color-primary-bg: #fff0f2;
+      --color-danger: #bb0f2c;
+      --color-danger-bg: #fff0f2;
+      --color-success: #28724f;
+      --color-success-bg: #edf8f1;
+      --color-warning: #9a641b;
+      --color-warning-bg: #fff7e9;
+      --color-text-primary: #141414;
+      --color-text-secondary: #5d5d5d;
+      --color-text-tertiary: #8d8d8d;
+      --color-border: #dedede;
+      --color-divider: #ededed;
+      --color-bg-page: #f5f5f5;
+      --color-bg-container: #ffffff;
+      --color-bg-fill: #f7f7f7;
+      --color-mask: rgba(0, 0, 0, .52);
+      --shadow-2: 0 10px 30px rgba(0, 0, 0, .1);
+      --shadow-3: 0 20px 50px rgba(0, 0, 0, .18);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1180px;
+      color: var(--color-text-primary);
+      background: var(--color-bg-page);
+      font: 14px/1.55 "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: #111;
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: Georgia, "Songti SC", serif;
+      letter-spacing: .4px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .65);
+      font: 700 18px/1 Georgia, serif;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      bottom: 5px;
+      height: 2px;
+      background: var(--color-primary);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: #dedede;
+    }
+
+    .role-select {
+      border: 1px solid #5a5a5a;
+      border-radius: 4px;
+      padding: 5px 10px;
+      background: #212121;
+      color: #fff;
+    }
+
+    .avatar {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #d9d9d9;
+      color: #222;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .main-nav {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 28px;
+      background: #fff;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-item {
+      height: 52px;
+      padding: 0 17px;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      color: #4f4f4f;
+      background: transparent;
+    }
+
+    .nav-item.active {
+      border-bottom-color: var(--color-primary);
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+
+    .page {
+      padding: 28px;
+    }
+
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .crumb {
+      margin-bottom: 5px;
+      color: var(--color-text-tertiary);
+      font-size: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.2;
+      letter-spacing: -.4px;
+    }
+
+    .subhead {
+      margin-top: 7px;
+      color: var(--color-text-secondary);
+    }
+
+    .head-actions,
+    .toolbar,
+    .button-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      color: #252525;
+      background: #fff;
+      transition: .18s ease;
+    }
+
+    .btn:hover {
+      border-color: #929292;
+      background: #fafafa;
+    }
+
+    .btn-primary {
+      border-color: var(--color-primary);
+      color: #fff;
+      background: var(--color-primary);
+    }
+
+    .btn-primary:hover {
+      border-color: var(--color-primary-hover);
+      background: var(--color-primary-hover);
+    }
+
+    .btn-danger {
+      border-color: var(--color-danger);
+      color: var(--color-danger);
+      background: #fff;
+    }
+
+    .btn-text {
+      border-color: transparent;
+      color: var(--color-primary);
+      background: transparent;
+    }
+
+    .btn[disabled] {
+      cursor: not-allowed;
+      opacity: .44;
+    }
+
+    .filter-panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 18px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #fff;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 148px;
+    }
+
+    .field label,
+    .label {
+      color: #353535;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .required::before {
+      content: "*";
+      margin-right: 4px;
+      color: var(--color-danger);
+    }
+
+    .control {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid #d2d2d2;
+      border-radius: var(--radius-sm);
+      outline: none;
+      background: #fff;
+    }
+
+    textarea.control {
+      height: auto;
+      min-height: 86px;
+      padding: 9px 10px;
+      resize: vertical;
+    }
+
+    .control:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(187, 15, 44, .1);
+    }
+
+    .search {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .workspace {
+      margin-top: 18px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .workspace-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .tabs {
+      display: flex;
+      align-items: stretch;
+      gap: 24px;
+      height: 58px;
+    }
+
+    .tab {
+      position: relative;
+      border: 0;
+      padding: 0;
+      color: var(--color-text-secondary);
+      background: transparent;
+    }
+
+    .tab.active {
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--color-primary);
+    }
+
+    .count {
+      display: inline-grid;
+      min-width: 18px;
+      height: 18px;
+      place-items: center;
+      margin-left: 4px;
+      padding: 0 5px;
+      border-radius: 9px;
+      color: #666;
+      background: #eee;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .task-card {
+      position: relative;
+      min-height: 300px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #fff;
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-2);
+    }
+
+    .card-banner {
+      position: relative;
+      height: 110px;
+      padding: 15px 16px;
+      overflow: hidden;
+      color: #fff;
+      background: #202020;
+    }
+
+    .card-banner::before,
+    .card-banner::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      transform: rotate(31deg);
+    }
+
+    .card-banner::before {
+      top: -110px;
+      right: 14px;
+    }
+
+    .card-banner::after {
+      right: -70px;
+      bottom: -105px;
+      border-color: rgba(187, 15, 44, .9);
+    }
+
+    .card-banner.red {
+      background: linear-gradient(130deg, #171717 0%, #171717 54%, #8f0922 54%, #bc0e2d 100%);
+    }
+
+    .card-banner.light {
+      color: #1b1b1b;
+      background: linear-gradient(130deg, #f4f3f0 0%, #e5e2de 55%, #c3b5a1 55%, #b99571 100%);
+    }
+
+    .card-code {
+      position: relative;
+      z-index: 1;
+      font-size: 11px;
+      opacity: .75;
+    }
+
+    .card-banner h3 {
+      position: relative;
+      z-index: 1;
+      max-width: 76%;
+      margin: 7px 0 0;
+      font: 700 20px/1.25 Georgia, "Songti SC", serif;
+    }
+
+    .card-body {
+      padding: 15px 16px 17px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 12px;
+      color: #595959;
+      background: #f0f0f0;
+      font-size: 12px;
+    }
+
+    .tag.red {
+      color: #9d0925;
+      background: var(--color-primary-bg);
+    }
+
+    .tag.green {
+      color: var(--color-success);
+      background: var(--color-success-bg);
+    }
+
+    .tag.amber {
+      color: var(--color-warning);
+      background: var(--color-warning-bg);
+    }
+
+    .card-info {
+      display: grid;
+      gap: 8px;
+      margin: 13px 0;
+      color: #555;
+      font-size: 13px;
+    }
+
+    .card-info b {
+      display: inline-block;
+      min-width: 60px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .card-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-divider);
+    }
+
+    .faces {
+      display: flex;
+      align-items: center;
+    }
+
+    .face {
+      width: 22px;
+      height: 22px;
+      margin-left: -5px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      color: #444;
+      background: #dcdcdc;
+      font-size: 9px;
+    }
+
+    .face:first-child {
+      margin-left: 0;
+      background: #d3b6aa;
+    }
+
+    .face:nth-child(2) {
+      background: #becbd0;
+    }
+
+    .face:nth-child(3) {
+      background: #d8cfab;
+    }
+
+    .muted {
+      color: var(--color-text-tertiary);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th {
+      height: 42px;
+      padding: 0 12px;
+      color: #666;
+      background: #f7f7f7;
+      font-size: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--color-divider);
+      vertical-align: middle;
+    }
+
+    .table tr:hover td {
+      background: #fff7f8;
+    }
+
+    .mini-cover {
+      width: 45px;
+      height: 45px;
+      display: inline-grid;
+      place-items: center;
+      margin-right: 9px;
+      vertical-align: middle;
+      border-radius: 4px;
+      color: #fff;
+      background: #272727;
+      font-family: Georgia, serif;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 16px 0 0;
+    }
+
+    .page-num {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      color: #555;
+      background: #fff;
+    }
+
+    .page-num.active {
+      border-color: var(--color-primary);
+      color: #fff;
+      background: var(--color-primary);
+    }
+
+    .modal-mask {
+      position: fixed;
+      z-index: 30;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background: var(--color-mask);
+    }
+
+    .modal-mask.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 760px;
+      max-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: #fff;
+      box-shadow: var(--shadow-3);
+      animation: in .2s ease;
+    }
+
+    .modal.wide {
+      width: 1080px;
+    }
+
+    .modal.small {
+      width: 500px;
+    }
+
+    @keyframes in {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 61px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      color: #666;
+      background: transparent;
+      font-size: 23px;
+    }
+
+    .modal-body {
+      overflow: auto;
+      padding: 22px;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 22px;
+      border-top: 1px solid var(--color-divider);
+    }
+
+    .section {
+      margin-bottom: 23px;
+      padding: 18px;
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-md);
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 15px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 3px;
+      height: 16px;
+      background: var(--color-primary);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
+    }
+
+    .form-grid .span-2 {
+      grid-column: span 2;
+    }
+
+    .template-select {
+      display: grid;
+      grid-template-columns: 132px 1fr;
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      background: #fffafb;
+    }
+
+    .template-thumb {
+      position: relative;
+      height: 94px;
+      overflow: hidden;
+      border-radius: 5px;
+      background: linear-gradient(135deg, #2d2d2d, #121212);
+    }
+
+    .lighter {
+      position: absolute;
+      top: 13px;
+      left: 43px;
+      width: 45px;
+      height: 66px;
+      border: 2px solid rgba(255, 255, 255, .75);
+      border-radius: 4px 4px 7px 7px;
+    }
+
+    .lighter::after {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 5px;
+      width: 30px;
+      height: 10px;
+      border: 2px solid rgba(255, 255, 255, .75);
+      border-bottom: 0;
+      border-radius: 3px 3px 0 0;
+    }
+
+    .design-zone {
+      position: absolute;
+      top: 25px;
+      left: 51px;
+      width: 29px;
+      height: 32px;
+      border: 1px dashed #e93551;
+      background: rgba(187, 15, 44, .18);
+    }
+
+    .template-meta h4 {
+      margin: 0 0 4px;
+    }
+
+    .template-meta p {
+      margin: 3px 0;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .upload-box {
+      min-height: 116px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 7px;
+      border: 1px dashed #b5b5b5;
+      border-radius: var(--radius-md);
+      color: #777;
+      background: #fafafa;
+    }
+
+    .upload-box strong {
+      color: #333;
+    }
+
+    .upload-box:hover {
+      border-color: var(--color-primary);
+      background: #fffafa;
+    }
+
+    .file-ok {
+      display: none;
+      align-items: center;
+      gap: 11px;
+      padding: 10px;
+      border: 1px solid #cfe7d7;
+      border-radius: 5px;
+      color: #286244;
+      background: var(--color-success-bg);
+    }
+
+    .file-icon {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      color: #fff;
+      background: #d3475f;
+      font-weight: 700;
+    }
+
+    .preview-panel {
+      display: none;
+      grid-template-columns: 1fr 230px;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid #e4d1d5;
+      border-radius: var(--radius-md);
+      background: #fffafb;
+    }
+
+    .preview-panel.open {
+      display: grid;
+    }
+
+    .canvas {
+      position: relative;
+      min-height: 176px;
+      overflow: hidden;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #dedbd5 25%, #f2eee9 25%, #f2eee9 50%, #dedbd5 50%, #dedbd5 75%, #f2eee9 75%);
+      background-size: 18px 18px;
+    }
+
+    .canvas .lighter {
+      top: 20px;
+      left: calc(50% - 36px);
+      width: 72px;
+      height: 115px;
+      border-color: #363636;
+      background: #f6f4ef;
+    }
+
+    .canvas .lighter::after {
+      top: -14px;
+      left: 9px;
+      width: 50px;
+      height: 16px;
+      border-color: #363636;
+    }
+
+    .canvas .design-zone {
+      top: 39px;
+      left: calc(50% - 23px);
+      width: 46px;
+      height: 58px;
+      border-color: var(--color-primary);
+      background: linear-gradient(135deg, #f1b2ba, #b70d2a);
+    }
+
+    .preview-note {
+      padding: 5px 0;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .preview-note p {
+      margin: 0 0 8px;
+    }
+
+    .drawer-mask {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: none;
+      background: var(--color-mask);
+    }
+
+    .drawer-mask.open {
+      display: block;
+    }
+
+    .drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 880px;
+      height: 100%;
+      overflow: auto;
+      background: #fff;
+      box-shadow: -12px 0 32px rgba(0, 0, 0, .16);
+      animation: slide .24s ease;
+    }
+
+    @keyframes slide {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .drawer-head {
+      position: sticky;
+      z-index: 1;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 24px;
+      border-bottom: 1px solid var(--color-divider);
+      background: #fff;
+    }
+
+    .drawer-body {
+      padding: 23px 26px 40px;
+    }
+
+    .detail-hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+      padding: 24px;
+      border-radius: var(--radius-md);
+      color: #fff;
+      background: #1b1b1b;
+    }
+
+    .detail-hero::after {
+      content: "";
+      position: absolute;
+      right: 20px;
+      bottom: -72px;
+      width: 270px;
+      height: 270px;
+      border: 2px solid rgba(187, 15, 44, .8);
+      transform: rotate(35deg);
+    }
+
+    .detail-hero h2 {
+      position: relative;
+      z-index: 1;
+      margin: 11px 0 4px;
+      font: 700 28px/1.2 Georgia, "Songti SC", serif;
+    }
+
+    .detail-hero p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: #d5d5d5;
+    }
+
+    .deadline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .deadline>div {
+      position: relative;
+      z-index: 1;
+      padding: 9px 11px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      background: rgba(255, 255, 255, .07);
+      font-size: 12px;
+    }
+
+    .deadline span {
+      display: block;
+      color: #bbb;
+    }
+
+    .deadline b {
+      font-weight: 500;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 20px;
+    }
+
+    .info-card {
+      padding: 18px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    .info-card h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: #555;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #555;
+    }
+
+    .info-list b {
+      display: inline-block;
+      min-width: 72px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .sticky-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .sticky-actions .btn {
+      width: 100%;
+    }
+
+    .submission-card {
+      margin-top: 20px;
+      padding: 19px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    .submission-card .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .empty-tip {
+      padding: 14px;
+      border-left: 3px solid var(--color-primary);
+      color: #6b5559;
+      background: #fff6f7;
+      font-size: 13px;
+    }
+
+    .notice {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      color: #655827;
+      background: var(--color-warning-bg);
+      font-size: 13px;
+    }
+
+    .notice strong {
+      color: #5e4c0f;
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .template-card {
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    .template-cover {
+      height: 135px;
+      position: relative;
+      background: #222;
+    }
+
+    .template-cover.silver {
+      background: linear-gradient(135deg, #d8dbde, #7b8186);
+    }
+
+    .template-cover.gold {
+      background: linear-gradient(135deg, #e4ca97, #895d28);
+    }
+
+    .template-cover .lighter {
+      top: 27px;
+      left: calc(50% - 32px);
+      width: 64px;
+      height: 90px;
+    }
+
+    .template-cover .lighter::after {
+      top: -12px;
+      left: 8px;
+      width: 44px;
+      height: 14px;
+    }
+
+    .template-card-main {
+      padding: 13px;
+    }
+
+    .template-card-main h4 {
+      margin: 0 0 5px;
+    }
+
+    .template-card-main p {
+      margin: 0 0 12px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .template-card-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--color-divider);
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 50;
+      top: 78px;
+      left: 50%;
+      display: none;
+      transform: translateX(-50%);
+      padding: 10px 16px;
+      border-radius: 5px;
+      color: #245b3d;
+      background: #f0f8f3;
+      box-shadow: var(--shadow-2);
+    }
+
+    .toast.show {
+      display: block;
+      animation: toast .24s ease;
+    }
+
+    @keyframes toast {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1240px) {
+      body {
+        min-width: 0;
+      }
+
+      .task-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .drawer {
+        width: 82vw;
+      }
+
+      .page {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        padding: 0 14px;
+      }
+
+      .main-nav {
+        padding: 0 10px;
+        overflow: auto;
+      }
+
+      .page-head,
+      .filter-panel {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .task-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-panel {
+        width: 100%;
+      }
+
+      .form-grid,
+      .detail-layout,
+      .preview-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid .span-2 {
+        grid-column: auto;
+      }
+
+      .deadline {
+        grid-template-columns: 1fr;
+      }
+
+      .drawer {
+        width: 100%;
+      }
+
+      .modal {
+        width: 100%;
+      }
+
+      .head-actions {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">Z</span><span>AI-PIM</span></div>
+      <div class="top-actions"><span>选品中心</span><select id="roleSelect" class="role-select" aria-label="切换演示角色">
+          <option value="designer">设计师视角</option>
+          <option value="publisher">发布人视角</option>
+          <option value="handler">投稿处理人视角</option>
+          <option value="admin">模板管理员视角</option>
+        </select><span class="avatar">蔡</span></div>
+    </header>
+    <nav class="main-nav" aria-label="主导航"><button
+        class="nav-item active">灵感任务池</button></nav>
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <div class="crumb">选品中心 / 创意管理</div>
+          <h1 id="pageTitle">灵感任务池</h1>
+          <div class="subhead" id="pageSubhead">查看任务要求，报名并提交自己的设计创意</div>
+        </div>
+        <div class="head-actions"><button class="btn hidden" id="templateEntry">型号模板库</button><button
+            class="btn btn-primary hidden" id="newTaskEntry">+ 发布灵感任务</button></div>
+      </div>
+      <section class="filter-panel" aria-label="任务筛选">
+        <div class="field search"><label>任务搜索</label><input id="taskSearch" class="control"
+            placeholder="输入任务名称、型号或任务编码"></div>
+        <div class="field"><label>任务状态</label><select class="control" id="statusFilter">
+            <option value="all">全部状态</option>
+            <option value="recruiting">招募中</option>
+            <option value="submitting">收稿中</option>
+            <option value="ended">已结束</option>
+          </select></div>
+        <div class="field"><label>时间范围</label><select class="control">
+            <option>近 30 天</option>
+            <option>近 90 天</option>
+            <option>全部时间</option>
+          </select></div>
+        <div class="button-row" style="padding-top:25px"><button class="btn btn-primary"
+            id="searchBtn">查询</button><button class="btn" id="resetBtn">重置</button></div>
+      </section>
+      <section class="workspace">
+        <div class="workspace-head">
+          <div class="tabs" id="workspaceTabs"><button class="tab active" data-tab="current">当前任务<span
+                class="count">6</span></button><button class="tab" data-tab="mine"><span>我的报名与投稿</span><span
+                class="count">2</span></button><button class="tab hidden" data-tab="published"
+              id="publishedTab">我的发布<span class="count">3</span></button><button class="tab hidden" data-tab="drafts"
+              id="draftTab">我的草稿<span class="count">1</span></button></div><span class="muted" id="resultCount">共 6
+            条任务</span>
+        </div>
+        <div class="content" id="contentArea"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-mask" id="detailDrawer" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-label="任务详情">
+      <div class="drawer-head">
+        <div><b>任务详情</b><span class="tag red" style="margin-left:8px">招募中</span></div><button class="modal-close"
+          data-close-drawer>×</button>
+      </div>
+      <div class="drawer-body">
+        <div class="detail-hero"><span class="tag"
+            style="color:#eee;background:rgba(255,255,255,.13)">LT-20260803-001</span>
+          <h2>铜壳常规款 · 城市霓虹系列</h2>
+          <p>以城市夜行的霓虹色彩为灵感，为铜壳常规款打造具有辨识度的图案设计。</p>
+          <div class="deadline">
+            <div><span>征集开始</span><b>2026-08-03 09:00</b></div>
+            <div><span>报名截止</span><b>2026-08-12 18:00</b></div>
+            <div><span>投稿截止</span><b>2026-08-20 18:00</b></div>
+          </div>
+        </div>
+        <div class="detail-layout">
+          <div>
+            <div class="info-card">
+              <h3>创意要求</h3>
+              <p>画面需要有清晰的主视觉，适合金属蚀刻工艺呈现。请避免过密细节，设计区域以模板标注范围为准。</p>
+            </div>
+            <div class="info-card" style="margin-top:16px">
+              <h3>型号模板</h3>
+              <div class="template-select">
+                <div class="template-thumb">
+                  <div class="lighter"></div>
+                  <div class="design-zone"></div>
+                </div>
+                <div class="template-meta">
+                  <h4>铜壳常规款 · V2.1</h4>
+                  <p>设计区：900 × 1400 px ｜ 45 × 70 mm</p>
+                  <p>300 DPI ｜ PNG / JPG ｜ 单文件不超过 20 MB</p><button class="btn btn-text"
+                    id="previewTemplate">查看图片要求与二维预览</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="sticky-actions"><button class="btn btn-primary" id="registerBtn">我要报名</button><button
+              class="btn" id="submitEntry">我要投稿</button><button class="btn" id="feedbackEntry">查看我的反馈</button><button
+              class="btn hidden" id="manageSubmissions">查看投稿管理</button><button class="btn btn-danger hidden"
+              id="terminateEntry">终止任务</button></aside>
+        </div>
+        <div class="submission-card" id="submissionArea">
+          <h3 style="margin-top:0">我的创意</h3>
+          <div class="empty-tip" id="submissionHint">请先完成报名。报名成功后可保存创意草稿或提交作品。</div>
+          <div class="hidden" id="submissionForm">
+            <div class="form-grid">
+              <div class="field"><label class="required">作品名称</label><input class="control" placeholder="输入作品名称"></div>
+              <div class="field"><label class="required">设计图</label><button class="upload-box"
+                  id="designUpload"><strong>上传主设计图</strong><span>PNG / JPG，按模板规格校验</span></button>
+                <div class="file-ok" id="designFile"><span
+                    class="file-icon">IMG</span><span><b>city-neon-v01.png</b><br><small>900 × 1400 px · 6.2 MB ·
+                      校验通过</small></span></div>
+              </div>
+              <div class="field span-2"><label class="required">设计说明</label><textarea class="control"
+                  placeholder="说明创意构思、画面重点与设计表达"></textarea></div>
+              <div class="field span-2"><label>参考资料</label><button class="upload-box"
+                  id="refUpload"><strong>添加参考资料</strong><span>选填，可上传图片或文档</span></button></div>
+              <div class="field span-2"><label class="required">AI / PSD 源素材</label><button class="upload-box"
+                  id="sourceUpload"><strong>上传 AI 或 PSD 源文件</strong><span>至少一份，上传后需支持在线预览</span></button>
+                <div class="file-ok" id="sourceFile"><span
+                    class="file-icon">AI</span><span><b>city-neon-source.ai</b><br><small>18.4 MB ·
+                      已生成在线预览</small></span></div>
+              </div>
+            </div>
+            <div class="preview-panel" id="previewPanel">
+              <div class="canvas">
+                <div class="lighter"></div>
+                <div class="design-zone"></div>
+              </div>
+              <div class="preview-note"><b>二维效果预览</b>
+                <p>红色虚线框为可设计区域。</p>
+                <p>当前主图与模板比例一致，分辨率符合要求。</p><button class="btn">下载效果图</button>
+              </div>
+            </div>
+            <div class="button-row" style="justify-content:flex-end;margin-top:16px"><button class="btn"
+                id="saveWork">保存草稿</button><button class="btn btn-primary" id="submitWork">确认提交</button></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-mask" id="newTaskModal">
+    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="newTaskTitle">
+      <div class="modal-header"><span class="modal-title" id="newTaskTitle">发布灵感任务</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <div class="notice"><strong>发布提示</strong><span>任务发布后，首位设计师报名即锁定任务主题、时间、创意要求和型号模板。若后续需修改关键要求，请终止原任务后新建。</span>
+        </div>
+        <div class="section">
+          <div class="section-title">任务基础信息</div>
+          <div class="form-grid">
+            <div class="field"><label class="required">任务主题</label><input class="control" value="铜壳常规款 · 城市霓虹系列"></div>
+            <div class="field"><label class="required">创意类型</label><input class="control" placeholder="例如：图案设计"></div>
+            <div class="field"><label class="required">创意调性</label><input class="control" placeholder="例如：复古、都市、极简">
+            </div>
+            <div class="field"><label class="required">任务封面</label><button class="btn"
+                style="text-align:left">上传封面图</button></div>
+            <div class="field span-2"><label class="required">创意要求</label><textarea class="control"
+                placeholder="描述任务背景、风格方向、设计边界和交付要求"></textarea></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">型号与时间安排</div>
+          <div class="form-grid">
+            <div class="field span-2"><label class="required">打火机型号模板</label>
+              <div class="template-select">
+                <div class="template-thumb">
+                  <div class="lighter"></div>
+                  <div class="design-zone"></div>
+                </div>
+                <div class="template-meta">
+                  <h4>铜壳常规款 · V2.1 <span class="tag green">启用</span></h4>
+                  <p>900 × 1400 px ｜ 45 × 70 mm ｜ 300 DPI</p><button class="btn btn-text"
+                    id="templateLibraryFromForm">更换型号模板</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label class="required">征集开始</label><input class="control" type="datetime-local"
+                value="2026-08-03T09:00"></div>
+            <div class="field"><label class="required">报名截止</label><input class="control" type="datetime-local"
+                value="2026-08-12T18:00"></div>
+            <div class="field"><label class="required">投稿截止</label><input class="control" type="datetime-local"
+                value="2026-08-20T18:00"></div>
+            <div class="field"><label class="required">投稿处理授权</label><select class="control">
+                <option>选择处理人员或角色</option>
+                <option>选品运营组</option>
+                <option>NPI 产品审核员</option>
+              </select></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal>取消</button><button class="btn"
+          id="saveTask">保存草稿</button><button class="btn btn-primary" id="publishTask">提交发布</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="registerModal">
+    <div class="modal small" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title">确认报名</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <p style="margin-top:0">报名后，当前任务的主题、时间、创意要求和型号模板将保留为你的任务快照。</p>
+        <div class="notice"><strong>请确认</strong><span>报名不等于投稿。投稿截止前未成功提交作品，将形成“报名失效（未投稿）”反馈。</span></div>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal>暂不报名</button><button class="btn btn-primary"
+          id="confirmRegister">确认报名</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="feedbackModal">
+    <div class="modal small" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title">反馈详情</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <div class="section">
+          <div class="section-title">城市霓虹 · 初稿</div>
+          <p><span class="tag amber">已退回</span></p>
+          <p><b>处理意见：</b>当前画面细节较密，建议强化主视觉，并按铜壳蚀刻工艺保留更多留白后再次投稿。</p>
+          <p class="muted">处理人：NPI 产品审核员 · 2026-08-11 14:20</p>
+        </div>
+        <div class="section">
+          <div class="section-title">任务状态</div>
+          <p>任务仍在收稿中。你可以重新填写作品名称、设计图和设计说明后再次提交。</p>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-primary" id="retrySubmit">再次投稿</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="terminateModal">
+    <div class="modal small" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title">终止灵感任务</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <div class="notice">
+          <strong>不可恢复</strong><span>终止后将停止新报名和新投稿，并通过消息中心通知全部已报名设计师。终止前已提交且待反馈的创意，仍可由授权处理人继续处理。</span></div>
+        <div class="field" style="margin-top:18px"><label class="required">终止原因</label><textarea class="control"
+            id="terminateReason" placeholder="请说明任务终止原因，最多 500 个字符"></textarea></div><label
+          style="display:flex;align-items:center;gap:8px;margin-top:16px"><input type="checkbox" id="terminateCheck">
+          我已确认上述影响，并将通过消息中心通知设计师</label>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal>取消</button><button class="btn btn-danger"
+          id="confirmTerminate">确认终止</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="processModal">
+    <div class="modal wide" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title">投稿管理 · 城市霓虹系列</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <div class="filter-panel"
+          style="padding:0 0 16px;border:0;border-bottom:1px solid var(--color-divider);border-radius:0">
+          <div class="field search"><label>投稿搜索</label><input class="control" placeholder="作品名称、设计师姓名"></div>
+          <div class="field"><label>处理状态</label><select class="control">
+              <option>全部</option>
+              <option>待反馈</option>
+              <option>已采纳</option>
+              <option>已退回</option>
+            </select></div>
+          <div class="button-row" style="padding-top:25px"><button class="btn btn-primary">查询</button></div>
+        </div>
+        <table class="table" style="margin-top:16px">
+          <thead>
+            <tr>
+              <th>作品信息</th>
+              <th>投稿人</th>
+              <th>提交时间</th>
+              <th>素材</th>
+              <th>状态</th>
+              <th style="width:170px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mini-cover">N</span><b>城市霓虹 · 夜行</b></td>
+              <td>周意</td>
+              <td>2026-08-10 11:18</td>
+              <td><button class="btn btn-text">预览 2 项</button></td>
+              <td><span class="tag amber">待反馈</span></td>
+              <td><button class="btn btn-text" data-process="accept">采纳</button><button class="btn btn-text"
+                  data-process="return">退回</button></td>
+            </tr>
+            <tr>
+              <td><span class="mini-cover" style="background:#b89f72">O</span><b>城市霓虹 · 光轨</b></td>
+              <td>林宁</td>
+              <td>2026-08-09 16:42</td>
+              <td><button class="btn btn-text">预览 2 项</button></td>
+              <td><span class="tag green">已采纳</span></td>
+              <td><span class="muted">已沉淀灵感库</span></td>
+            </tr>
+            <tr>
+              <td><span class="mini-cover" style="background:#7a868c">R</span><b>城市霓虹 · 回声</b></td>
+              <td>沈溪</td>
+              <td>2026-08-09 10:21</td>
+              <td><button class="btn btn-text">预览 3 项</button></td>
+              <td><span class="tag">已退回</span></td>
+              <td><button class="btn btn-text">查看处理意见</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal>关闭</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="decisionModal">
+    <div class="modal small" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title" id="decisionTitle">采纳创意</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body" id="decisionBody"></div>
+      <div class="modal-foot"><button class="btn" data-close-modal>取消</button><button class="btn btn-primary"
+          id="confirmDecision">确认</button></div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="templateModal">
+    <div class="modal wide" role="dialog" aria-modal="true">
+      <div class="modal-header"><span class="modal-title">我的模板库</span><button class="modal-close"
+          data-close-modal>×</button></div>
+      <div class="modal-body">
+        <div class="filter-panel"
+          style="padding:0 0 16px;border:0;border-bottom:1px solid var(--color-divider);border-radius:0">
+          <div class="field search"><label>模板搜索</label><input class="control" placeholder="搜索打火机型号或模板版本"></div>
+          <div class="field"><label>状态</label><select class="control">
+              <option>全部</option>
+              <option>启用</option>
+              <option>停用</option>
+            </select></div>
+          <div class="button-row" style="padding-top:25px"><button class="btn">重置</button><button
+              class="btn btn-primary">+ 新建模板</button></div>
+        </div>
+        <div class="template-grid" style="margin-top:20px">
+          <article class="template-card">
+            <div class="template-cover">
+              <div class="lighter"></div>
+            </div>
+            <div class="template-card-main">
+              <h4>铜壳常规款 · V2.1 <span class="tag green">启用</span></h4>
+              <p>900 × 1400 px · 45 × 70 mm · 300 DPI</p>
+              <div class="template-card-foot"><button class="btn btn-text">查看规格</button><button class="btn"
+                  data-toggle-template>停用</button></div>
+            </div>
+          </article>
+          <article class="template-card">
+            <div class="template-cover silver">
+              <div class="lighter"></div>
+            </div>
+            <div class="template-card-main">
+              <h4>铝壳超薄款 · V1.3 <span class="tag green">启用</span></h4>
+              <p>860 × 1320 px · 43 × 66 mm · 300 DPI</p>
+              <div class="template-card-foot"><button class="btn btn-text">查看规格</button><button class="btn"
+                  data-toggle-template>停用</button></div>
+            </div>
+          </article>
+          <article class="template-card">
+            <div class="template-cover gold">
+              <div class="lighter"></div>
+            </div>
+            <div class="template-card-main">
+              <h4>基础塑料款 · V1.0 <span class="tag">停用</span></h4>
+              <p>800 × 1200 px · 40 × 60 mm · 300 DPI</p>
+              <div class="template-card-foot"><button class="btn btn-text">查看规格</button><button class="btn"
+                  data-toggle-template>启用</button></div>
+            </div>
+          </article>
+        </div>
+        <div class="notice" style="margin-top:20px">
+          <strong>版本规则</strong><span>修改尺寸或图片要求后，应创建新版本；新版本只用于后续新建任务，历史任务继续引用原版本快照。</span></div>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close-modal>关闭</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script>
+    const state = { role: 'designer', registered: false, retrying: false, uploadedDesign: false, uploadedSource: false, activeTab: 'current', decision: 'accept', taskTerminated: false };
+    const $ = (s, root = document) => root.querySelector(s); const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+    const tasks = [
+      { title: '铜壳常规款 · 城市霓虹系列', code: 'LT-20260803-001', type: '铜壳常规款 V2.1', date: '征集 08/03 - 08/20', status: 'recruiting', label: '招募中', cls: 'red', members: '18 人已报名' },
+      { title: '铝壳超薄款 · 自然纹理计划', code: 'LT-20260728-004', type: '铝壳超薄款 V1.3', date: '征集 07/28 - 08/16', status: 'submitting', label: '收稿中', cls: 'light', members: '12 人已报名' },
+      { title: '十二生肖 · 限定图案征集', code: 'LT-20260710-012', type: '铜壳常规款 V2.1', date: '已结束 07/10 - 07/31', status: 'ended', label: '已结束', cls: '', members: '36 人已参与' },
+      { title: '基础塑料款 · 夏日花园', code: 'LT-20260801-007', type: '基础塑料款 V1.0', date: '征集 08/01 - 08/18', status: 'recruiting', label: '招募中', cls: 'light', members: '6 人已报名' },
+      { title: '铜壳常规款 · 机械美学', code: 'LT-20260725-006', type: '铜壳常规款 V2.1', date: '征集 07/25 - 08/14', status: 'submitting', label: '收稿中', cls: 'red', members: '22 人已报名' },
+      { title: '城市地标 · 旅行记忆', code: 'LT-20260705-002', type: '铝壳超薄款 V1.3', date: '已结束 07/05 - 07/25', status: 'ended', label: '已结束', cls: '', members: '41 人已参与' }
+    ];
+    function toast(text) { const t = $('#toast'); t.textContent = text; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); }
+    function modal(id, open = true) { const el = $('#' + id); el.classList.toggle('open', open); }
+    function renderCards() { const query = $('#taskSearch').value.trim().toLowerCase(); const status = $('#statusFilter').value; const list = tasks.filter(t => (status === 'all' || t.status === status) && (!query || (t.title + t.code + t.type).toLowerCase().includes(query))); $('#resultCount').textContent = `共 ${list.length} 条任务`; return `<div class="task-grid">${list.map(t => `<article class="task-card"><div class="card-banner ${t.cls}"><div class="card-code">${t.code}</div><h3>${t.title}</h3></div><div class="card-body"><span class="tag ${t.status === 'recruiting' ? 'red' : t.status === 'submitting' ? 'amber' : ''}">${t.label}</span><div class="card-info"><span><b>适用型号</b>${t.type}</span><span><b>任务时间</b>${t.date}</span></div><div class="card-foot"><div class="faces"><span class="face">周</span><span class="face">林</span><span class="face">+${t.members.split(' ')[0]}</span></div><button class="btn btn-text task-detail" data-code="${t.code}">查看任务</button></div></div></article>`).join('')}</div><div class="pagination"><button class="page-num active">1</button><button class="page-num">2</button><button class="page-num">3</button><button class="page-num">›</button></div>`; }
+    function renderMine() { return `<table class="table"><thead><tr><th>任务信息</th><th>报名时间</th><th>我的投稿</th><th>反馈结果</th><th>任务状态</th><th>操作</th></tr></thead><tbody><tr><td><b>铜壳常规款 · 城市霓虹系列</b><br><span class="muted">LT-20260803-001</span></td><td>2026-08-04 10:36</td><td>城市霓虹 · 初稿<br><span class="muted">2026-08-08 提交</span></td><td><span class="tag">已退回</span></td><td><span class="tag red">招募中</span></td><td><button class="btn btn-text" id="myFeedback">反馈详情</button><button class="btn btn-text" id="myRetry">再次投稿</button></td></tr><tr><td><b>铝壳超薄款 · 自然纹理计划</b><br><span class="muted">LT-20260728-004</span></td><td>2026-07-30 15:15</td><td><span class="muted">尚未投稿</span></td><td><span class="tag amber">报名失效（未投稿）</span></td><td><span class="tag">已结束</span></td><td><button class="btn btn-text" id="myFeedback2">反馈详情</button></td></tr></tbody></table>`; }
+    function renderPublished() { const currentStatus = state.taskTerminated ? '<span class="tag">已终止</span>' : '<span class="tag red">招募中</span>'; const currentAction = state.taskTerminated ? '<span class="muted">不可终止</span>' : '<button class="btn btn-text terminate-link">终止任务</button>'; return `<table class="table"><thead><tr><th>任务信息</th><th>型号模板</th><th>报名 / 投稿</th><th>任务状态</th><th>更新时间</th><th style="width:220px">操作</th></tr></thead><tbody><tr><td><b>铜壳常规款 · 城市霓虹系列</b><br><span class="muted">LT-20260803-001</span></td><td>铜壳常规款 V2.1</td><td>18 人 / 3 份</td><td>${currentStatus}</td><td>2026-08-11 14:20</td><td><button class="btn btn-text publisher-detail">查看</button><button class="btn btn-text manage-link">投稿管理</button>${currentAction}</td></tr><tr><td><b>城市地标 · 旅行记忆</b><br><span class="muted">LT-20260705-002</span></td><td>铝壳超薄款 V1.3</td><td>41 人 / 15 份</td><td><span class="tag">已结束</span></td><td>2026-07-25 19:00</td><td><button class="btn btn-text publisher-detail">查看</button><button class="btn btn-text manage-link">投稿管理</button></td></tr></tbody></table>`; }
+    function renderDrafts() { return `<table class="table"><thead><tr><th>任务草稿</th><th>型号模板</th><th>最后保存</th><th>草稿状态</th><th>操作</th></tr></thead><tbody><tr><td><b>春节限定 · 年画新生</b><br><span class="muted">草稿未发布</span></td><td>未选择</td><td>2026-08-03 10:18</td><td><span class="tag">待完善</span></td><td><button class="btn btn-text" id="editDraft">继续编辑</button><button class="btn btn-text" id="deleteDraft">删除</button></td></tr></tbody></table>`; }
+    function renderAdminLibrary() { return `<div class="section" style="margin-bottom:16px"><div class="section-title">模板管理规则</div><p class="muted" style="margin:0">模板管理员维护透明底图、设计区域和图片规格。修改尺寸后创建新版本，只影响后续新建任务，历史任务继续使用原版本。</p></div><table class="table"><thead><tr><th>模板名称</th><th>型号编码</th><th>版本</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody><tr><td><b>铜壳常规款</b></td><td>ZIPPO-COPPER</td><td>V2.1</td><td>900 × 1400 px / 45 × 70 mm / 300 DPI</td><td><span class="tag green">启用</span></td><td><button class="btn btn-text">查看</button><button class="btn btn-text admin-toggle">停用</button></td></tr><tr><td><b>铝壳超薄款</b></td><td>ZIPPO-ALUMINUM</td><td>V1.3</td><td>860 × 1320 px / 43 × 66 mm / 300 DPI</td><td><span class="tag green">启用</span></td><td><button class="btn btn-text">查看</button><button class="btn btn-text admin-toggle">停用</button></td></tr><tr><td><b>基础塑料款</b></td><td>ZIPPO-PLASTIC</td><td>V1.0</td><td>800 × 1200 px / 40 × 60 mm / 300 DPI</td><td><span class="tag">停用</span></td><td><button class="btn btn-text">查看</button><button class="btn btn-text admin-toggle">启用</button></td></tr></tbody></table>`; }
+    function renderContent() { let html = state.role === 'admin' ? renderAdminLibrary() : state.activeTab === 'current' ? renderCards() : state.activeTab === 'mine' ? renderMine() : state.activeTab === 'published' ? renderPublished() : renderDrafts(); $('#contentArea').innerHTML = html; bindDynamic(); }
+    function bindDynamic() { $$('.task-detail, .publisher-detail').forEach(b => b.onclick = () => openDetail()); $$('.manage-link').forEach(b => b.onclick = () => modal('processModal')); $$('.terminate-link').forEach(b => b.onclick = () => modal('terminateModal')); $('#myFeedback') && ($('#myFeedback').onclick = () => modal('feedbackModal')); $('#myFeedback2') && ($('#myFeedback2').onclick = () => { $('#feedbackModal .modal-body').innerHTML = '<div class="section"><div class="section-title">自然纹理计划</div><p><span class="tag amber">报名失效（未投稿）</span></p><p>投稿截止时间已到，你未成功提交作品，本次报名已失效。</p><p class="muted">形成时间：2026-08-16 18:00</p></div>'; modal('feedbackModal'); }); $('#myRetry') && ($('#myRetry').onclick = () => openDetail({ retry: true })); $('#editDraft') && ($('#editDraft').onclick = () => modal('newTaskModal')); $('#deleteDraft') && ($('#deleteDraft').onclick = () => toast('草稿已删除（演示状态）')); $$('.admin-toggle').forEach(b => b.onclick = () => { b.textContent = b.textContent === '停用' ? '启用' : '停用'; const tag = b.closest('tr').querySelector('.tag'); tag.textContent = b.textContent === '停用' ? '启用' : '停用'; tag.className = b.textContent === '停用' ? 'tag green' : 'tag'; toast('模板状态已更新；不会影响已引用的历史任务'); }); }
+    function openDetail(options = {}) { if (options.retry) { state.registered = true; state.retrying = true; } $('#detailDrawer').classList.add('open'); $('#detailDrawer').setAttribute('aria-hidden', 'false'); updateDetailRole(); }
+    function updateDetailRole() { const isDesigner = state.role === 'designer'; const isPublisher = state.role === 'publisher'; const isHandler = state.role === 'handler'; const canRegister = isDesigner && !state.registered && !state.taskTerminated; const canSubmit = isDesigner && state.registered && !state.taskTerminated; $('#registerBtn').classList.toggle('hidden', !canRegister); $('#submitEntry').classList.toggle('hidden', !canSubmit); $('#feedbackEntry').classList.toggle('hidden', !isDesigner); $('#manageSubmissions').classList.toggle('hidden', !(isPublisher || isHandler)); $('#terminateEntry').classList.toggle('hidden', !isPublisher); $('#terminateEntry').disabled = state.taskTerminated; $('#terminateEntry').textContent = state.taskTerminated ? '任务已终止' : '终止任务'; if (canSubmit) { $('#submissionHint').classList.add('hidden'); $('#submissionForm').classList.remove('hidden'); } else if (!isDesigner) { $('#submissionHint').classList.remove('hidden'); $('#submissionForm').classList.add('hidden'); } }
+    function switchRole(role) { const changed = state.role !== role; if (changed) { state.registered = false; state.retrying = false; state.uploadedDesign = false; state.uploadedSource = false; $$('.modal-mask.open').forEach(m => m.classList.remove('open')); $('#detailDrawer').classList.remove('open'); } state.role = role; const pub = role === 'publisher', admin = role === 'admin'; $('#newTaskEntry').classList.toggle('hidden', !pub); $('#templateEntry').classList.toggle('hidden', !(admin || pub)); $('#publishedTab').classList.toggle('hidden', !pub); $('#draftTab').classList.toggle('hidden', !pub); if (admin) { state.activeTab = 'current'; $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === 'current')); } else if (!pub && (state.activeTab === 'published' || state.activeTab === 'drafts')) { state.activeTab = 'current'; $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === 'current')); } const copy = { designer: ['灵感任务池', '查看任务要求，报名并提交自己的设计创意'], publisher: ['灵感任务池', '发布与管理灵感招募任务，查看投稿处理进展'], handler: ['灵感任务池', '查看被授权任务的待反馈创意并完成处理'], admin: ['型号模板库', '维护可用于新建任务的型号模板版本'] }[role]; $('#pageTitle').textContent = copy[0]; $('#pageSubhead').textContent = copy[1]; renderContent(); }
+    $('#roleSelect').onchange = e => switchRole(e.target.value);
+    $('#workspaceTabs').onclick = e => { const tab = e.target.closest('.tab'); if (!tab || tab.classList.contains('hidden')) return; state.activeTab = tab.dataset.tab; $$('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderContent(); };
+    $('#searchBtn').onclick = renderContent; $('#resetBtn').onclick = () => { $('#taskSearch').value = ''; $('#statusFilter').value = 'all'; renderContent(); };
+    $('#newTaskEntry').onclick = () => modal('newTaskModal'); $('#templateEntry').onclick = () => modal('templateModal'); $('#templateLibraryFromForm').onclick = () => modal('templateModal');
+    $$('[data-close-modal]').forEach(b => b.onclick = () => $$('.modal-mask.open').forEach(m => m.classList.remove('open'))); $('[data-close-drawer]').onclick = () => $('#detailDrawer').classList.remove('open');
+    $('#detailDrawer').onclick = e => { if (e.target === $('#detailDrawer')) $('#detailDrawer').classList.remove('open'); };
+    $('#registerBtn').onclick = () => modal('registerModal'); $('#confirmRegister').onclick = () => { state.registered = true; modal('registerModal', false); updateDetailRole(); toast('报名成功，已为你保留任务要求快照'); };
+    $('#submitEntry').onclick = () => { $('#submissionForm').classList.remove('hidden'); $('#submissionHint').classList.add('hidden'); $('#submissionArea').scrollIntoView({ behavior: 'smooth' }); };
+    $('#designUpload').onclick = () => { state.uploadedDesign = true; $('#designUpload').classList.add('hidden'); $('#designFile').style.display = 'flex'; $('#previewPanel').classList.add('open'); toast('主设计图校验通过，已生成二维预览'); };
+    $('#sourceUpload').onclick = () => { state.uploadedSource = true; $('#sourceUpload').classList.add('hidden'); $('#sourceFile').style.display = 'flex'; toast('源素材已上传并可在线预览'); };
+    $('#refUpload').onclick = () => toast('已添加参考资料（演示状态）'); $('#previewTemplate').onclick = () => { $('#previewPanel').classList.add('open'); $('#submissionArea').scrollIntoView({ behavior: 'smooth' }); };
+    $('#saveWork').onclick = () => toast('创意已保存为草稿'); $('#submitWork').onclick = () => { if (!state.uploadedDesign || !state.uploadedSource) return toast('请先上传设计图及 AI/PSD 源素材'); toast('提交成功，作品已进入待反馈'); };
+    $('#feedbackEntry').onclick = () => modal('feedbackModal'); $('#retrySubmit').onclick = () => { modal('feedbackModal', false); openDetail({ retry: true }); setTimeout(() => $('#submissionArea').scrollIntoView({ behavior: 'smooth' }), 0); };
+    $('#manageSubmissions').onclick = () => modal('processModal'); $('#terminateEntry').onclick = () => modal('terminateModal');
+    $('#confirmTerminate').onclick = () => { if (!$('#terminateReason').value.trim()) return toast('请填写终止原因'); if (!$('#terminateCheck').checked) return toast('请确认终止影响'); state.taskTerminated = true; modal('terminateModal', false); renderContent(); updateDetailRole(); toast('任务已终止，已向全部报名设计师发送站内信通知'); };
+    $$('#processModal [data-process]').forEach(b => b.onclick = () => { state.decision = b.dataset.process; $('#decisionTitle').textContent = state.decision === 'accept' ? '采纳创意' : '退回创意'; $('#decisionBody').innerHTML = state.decision === 'accept' ? '<p>确认采纳“城市霓虹 · 夜行”吗？采纳后将生成灵感库关联记录，且该处理不可撤销。</p><div class="notice"><strong>处理结果</strong><span>设计师将收到采纳反馈，后续处理安排按当前全局配置保存快照。</span></div>' : '<div class="field"><label class="required">退回原因</label><textarea class="control" id="returnReason" placeholder="请说明退回原因，便于设计师调整后再次投稿"></textarea></div>'; modal('decisionModal'); });
+    $('#confirmDecision').onclick = () => { if (state.decision === 'return' && !$('#returnReason').value.trim()) return toast('请填写退回原因'); const row = $('#processModal tbody tr'); const status = row.querySelector('.tag'); const actions = row.querySelector('td:last-child'); status.textContent = state.decision === 'accept' ? '已采纳' : '已退回'; status.className = state.decision === 'accept' ? 'tag green' : 'tag'; actions.innerHTML = state.decision === 'accept' ? '<span class="muted">已沉淀灵感库</span>' : '<button class="btn btn-text">查看处理意见</button>'; modal('decisionModal', false); modal('processModal', false); toast(state.decision === 'accept' ? '已采纳创意并生成灵感库关联记录' : '已退回创意，设计师将收到反馈'); };
+    $('#saveTask').onclick = () => { modal('newTaskModal', false); toast('灵感任务已保存至我的草稿'); }; $('#publishTask').onclick = () => { modal('newTaskModal', false); toast('任务发布成功，已生成任务编码 LT-20260803-009'); };
+    $$('#templateModal [data-toggle-template]').forEach(b => b.onclick = () => { b.textContent = b.textContent === '停用' ? '启用' : '停用'; toast('模板状态已更新；不会影响已引用的历史任务'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { $$('.modal-mask.open').forEach(m => m.classList.remove('open')); $('#detailDrawer').classList.remove('open'); } });
+    switchRole('designer');
+  </script>
+</body>
+
+</html>
